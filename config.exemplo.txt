@@ -1,0 +1,47 @@
+# Modelo de configuração. Na primeira execução ele é copiado para config.txt.
+# Preencha pelo painel (aba Configurações) ou edite o config.txt no Bloco de Notas.
+
+# ===== Remetente (a SENHA não fica aqui: é pedida na hora) =====
+NOME_EMPRESA = Sua Empresa
+EMAIL_REMETENTE = seu.email@suaempresa.com.br
+NOME_REMETENTE = Seu Nome
+RESPONDER_PARA = seu.email@suaempresa.com.br
+# Cópias do comercial, separadas por vírgula. Cc: o cliente vê. Cco: o cliente não vê. O teste não copia ninguém.
+EMAILS_COPIA =
+EMAILS_COPIA_OCULTA =
+
+# ===== Assinatura =====
+CARGO = Seu cargo
+TELEFONE =
+# Número do botão de WhatsApp (só números ou com máscara)
+WHATSAPP =
+EMAIL_ASSINATURA = seu.email@suaempresa.com.br
+ENDERECO =
+TEXTO_DESCADASTRO = Caso não queira receber novos contatos, basta responder este e-mail com a palavra "remover".
+AVISO_LEGAL =
+
+# ===== Catálogo em anexo =====
+# Coloque o PDF na mesma pasta e escreva o nome do arquivo. Deixe vazio para enviar sem anexo.
+ANEXO_CATALOGO =
+
+# ===== Modo de envio =====
+# SMTP    = pelo servidor de e-mail, com senha
+# OUTLOOK = pelo Outlook clássico instalado neste PC (sem senha; requer: pip install pywin32)
+MODO_ENVIO = SMTP
+# DESIGN = faixas e botões | SIMPLES = parece escrito à mão
+ESTILO_EMAIL = DESIGN
+
+# ===== Servidor de saída (SMTP) =====
+#   Google Workspace  : smtp.gmail.com         porta 587
+#   Microsoft 365     : smtp.office365.com     porta 587
+#   Hostinger         : smtp.hostinger.com     porta 465
+#   Locaweb           : email-ssl.com.br       porta 465
+#   HostGator / cPanel: mail.seudominio.com.br porta 465
+SMTP_HOST = smtp.office365.com
+SMTP_PORTA = 587
+
+# ===== Segurança =====
+INTERVALO_MIN = 8
+INTERVALO_MAX = 10
+LIMITE_POR_EXECUCAO = 30
+PARAR_APOS_ERROS_SEGUIDOS = 3

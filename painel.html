@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Disparador de E-mail Comercial</title>
+<style>
+:root{
+  --azul:#0D4DA1; --azul-2:#0A3D80; --azul-claro:#EAF1FB; --azul-borda:#C9D8EE;
+  --fundo:#F3F6FA; --card:#fff; --txt:#1B2430; --txt-2:#5B6675; --borda:#DEE4EC;
+  --verde:#1A9E55; --verde-claro:#E6F6EC; --vermelho:#C93A3A; --vermelho-claro:#FDECEC;
+  --amarelo:#B7791F; --amarelo-claro:#FFF7E0; --wa:#25D366;
+  --raio:10px; --sombra:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--fundo);color:var(--txt);font:14px/1.45 "Segoe UI",system-ui,-apple-system,Arial,sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--azul)}
+header{background:#fff;border-bottom:1px solid var(--borda);position:sticky;top:0;z-index:20}
+.topo{display:flex;align-items:center;gap:18px;padding:10px 24px;flex-wrap:wrap}
+.topo img{height:38px}
+.topo h1{font-size:17px;margin:0;color:var(--azul);font-weight:700;letter-spacing:.2px}
+.topo .sub{color:var(--txt-2);font-size:12px}
+.chips{display:flex;gap:8px;margin-left:auto;flex-wrap:wrap}
+.chip{padding:5px 11px;border-radius:999px;background:var(--azul-claro);color:var(--azul);font-weight:600;font-size:12px;white-space:nowrap}
+.chip.ok{background:var(--verde-claro);color:var(--verde)} .chip.alerta{background:var(--amarelo-claro);color:var(--amarelo)}
+nav{display:flex;gap:2px;padding:0 16px;overflow-x:auto}
+nav button{border:0;background:none;padding:11px 16px;cursor:pointer;color:var(--txt-2);font-weight:600;border-bottom:3px solid transparent;white-space:nowrap}
+nav button:hover{color:var(--azul)}
+nav button.ativo{color:var(--azul);border-bottom-color:var(--azul)}
+main{padding:20px 24px 60px;max-width:1500px;margin:0 auto}
+.aba{display:none}.aba.ativa{display:block}
+.card{background:var(--card);border:1px solid var(--borda);border-radius:var(--raio);box-shadow:var(--sombra);padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:15px;margin:0 0 4px;color:var(--txt)} .card .dica{color:var(--txt-2);font-size:13px;margin:0 0 14px}
+.barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.barra .esp{flex:1}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=search],select,textarea{
+  border:1px solid var(--borda);border-radius:7px;padding:7px 10px;background:#fff;width:100%;outline:none}
+input:focus,select:focus,textarea:focus{border-color:var(--azul);box-shadow:0 0 0 3px rgba(13,77,161,.12)}
+textarea{resize:vertical;min-height:70px;line-height:1.5}
+.btn{border:1px solid var(--borda);background:#fff;border-radius:7px;padding:7px 14px;cursor:pointer;font-weight:600;white-space:nowrap}
+.btn:hover{border-color:var(--azul);color:var(--azul)}
+.btn.pri{background:var(--azul);border-color:var(--azul);color:#fff}.btn.pri:hover{background:var(--azul-2);color:#fff}
+.btn.verde{background:var(--verde);border-color:var(--verde);color:#fff}
+.btn.perigo{background:var(--vermelho);border-color:var(--vermelho);color:#fff}
+.btn.mini{padding:3px 8px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.sujo{display:none;color:var(--amarelo);font-weight:600;font-size:13px}.sujo.on{display:inline}
+/* tabela de contatos */
+.tabwrap{overflow:auto;border:1px solid var(--borda);border-radius:var(--raio);background:#fff;max-height:calc(100vh - 260px)}
+table{border-collapse:collapse;width:100%}
+th{position:sticky;top:0;background:#F7F9FC;z-index:2;text-align:left;font-size:12px;color:var(--txt-2);text-transform:uppercase;letter-spacing:.4px;padding:9px 8px;border-bottom:1px solid var(--borda);white-space:nowrap}
+td{border-bottom:1px solid #EEF1F5;padding:6px 8px;vertical-align:top}
+tr.mod td{background:#FFFCEF}
+tr.enviado td{background:#F4FBF6}
+tr.off td{opacity:.55}
+td input[type=text],td select,td textarea{padding:5px 7px;font-size:13px}
+td textarea{min-height:34px;height:34px}
+.c-emp{min-width:190px}.c-mail{min-width:220px}.c-tipo{min-width:112px}.c-nome{min-width:150px}.c-saud{min-width:340px}.c-frase{min-width:260px}.c-ass{min-width:180px}
+.tel{font-size:12px;color:var(--txt-2);min-width:160px}
+.status{font-size:12px;white-space:nowrap}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700}
+.tag.ok{background:var(--verde-claro);color:var(--verde)}.tag.er{background:var(--vermelho-claro);color:var(--vermelho)}
+.tag.pend{background:var(--amarelo-claro);color:var(--amarelo)}
+.sw{position:relative;display:inline-block;width:38px;height:22px}
+.sw input{opacity:0;width:0;height:0}
+.sw span{position:absolute;inset:0;background:#CBD3DE;border-radius:999px;cursor:pointer;transition:.15s}
+.sw span:before{content:"";position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.15s}
+.sw input:checked+span{background:var(--verde)}
+.sw input:checked+span:before{transform:translateX(16px)}
+.sw.az input:checked+span{background:var(--azul)}
+/* editor */
+.grid2{display:grid;grid-template-columns:minmax(380px,1fr) minmax(420px,1.1fr);gap:16px;align-items:start}
+@media(max-width:1000px){.grid2{grid-template-columns:1fr}}
+.campo{margin-bottom:12px}.campo label{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
+.campo small{color:var(--txt-2);font-size:12px}
+.vars{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.vars button{border:1px dashed var(--azul-borda);background:var(--azul-claro);color:var(--azul);border-radius:6px;padding:2px 8px;font-size:12px;cursor:pointer;font-family:Consolas,monospace}
+.previa{position:sticky;top:120px}
+.previa iframe{width:100%;height:calc(100vh - 240px);min-height:520px;border:1px solid var(--borda);border-radius:var(--raio);background:#EEF2F7}
+.assunto{background:#fff;border:1px solid var(--borda);border-radius:8px;padding:8px 12px;margin-bottom:8px;font-size:13px}
+.assunto b{color:var(--txt-2);font-weight:600;margin-right:6px}
+fieldset{border:1px solid var(--borda);border-radius:var(--raio);padding:12px 14px 4px;margin:0 0 14px}
+legend{font-weight:700;color:var(--azul);padding:0 6px;font-size:13px}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+@media(max-width:700px){.cols2{grid-template-columns:1fr}}
+/* envio */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:#fff;border:1px solid var(--borda);border-radius:var(--raio);padding:14px 16px}
+.kpi .n{font-size:26px;font-weight:700;color:var(--azul)} .kpi .r{color:var(--txt-2);font-size:12px}
+.alerta-box{border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px}
+.alerta-box.er{background:var(--vermelho-claro);color:#8E2323;border:1px solid #F3C5C5}
+.alerta-box.av{background:var(--amarelo-claro);color:#7A5310;border:1px solid #F1DFA8}
+.alerta-box.ok{background:var(--verde-claro);color:#145C33;border:1px solid #BFE5CD}
+.alerta-box ul{margin:6px 0 0;padding-left:18px;max-height:180px;overflow:auto}
+.prog{height:10px;background:#E6EBF2;border-radius:999px;overflow:hidden;margin:10px 0}
+.prog div{height:100%;background:var(--verde);width:0;transition:width .3s}
+pre.log{background:#0F1720;color:#D7E1EC;border-radius:8px;padding:12px;max-height:300px;overflow:auto;font-size:12.5px;margin:0;white-space:pre-wrap}
+.fila{max-height:220px;overflow:auto;font-size:13px;border:1px solid var(--borda);border-radius:8px}
+.fila div{padding:6px 10px;border-bottom:1px solid #EEF1F5}
+.fila div span{color:var(--txt-2)}
+.wa{display:inline-flex;align-items:center;gap:5px;background:var(--wa);color:#fff;text-decoration:none;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700}
+.vazio{padding:40px;text-align:center;color:var(--txt-2)}
+/* modal + toast */
+.modal{position:fixed;inset:0;background:rgba(15,23,32,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
+.modal.on{display:flex}
+.modal .box{background:#fff;border-radius:12px;width:min(820px,100%);max-height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.modal .cab{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--borda)}
+.modal iframe{border:0;width:100%;height:75vh;background:#EEF2F7}
+#toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:#1B2430;color:#fff;padding:10px 18px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.2);display:none;z-index:60;max-width:90vw;white-space:pre-line}
+#toast.er{background:var(--vermelho)} #toast.ok{background:var(--verde)}
+</style>
+</head>
+<body>
+<header>
+  <div class="topo">
+    <img src="/logo.png" alt="" onerror="this.style.display='none'">
+    <div><h1>Painel de Disparo de E-mails</h1><div class="sub">Tudo salvo direto nos arquivos da pasta · roda só no seu computador</div></div>
+    <div class="chips" id="chips"></div>
+  </div>
+  <nav id="nav">
+    <button data-aba="contatos" class="ativo">👥 Contatos &amp; Revisão</button>
+    <button data-aba="texto">✏️ Texto do e-mail</button>
+    <button data-aba="telefones">📞 Telefones</button>
+    <button data-aba="config">⚙️ Configurações</button>
+    <button data-aba="envio">🚀 Envio</button>
+  </nav>
+</header>
+
+<main>
+<!-- ═════════════ CONTATOS ═════════════ -->
+<section class="aba ativa" id="aba-contatos">
+  <div class="barra">
+    <input type="search" id="busca" placeholder="Buscar empresa, e-mail, nome..." style="max-width:300px">
+    <select id="filtro" style="max-width:220px">
+      <option value="todos">Todos</option>
+      <option value="pend">Falta aprovar</option>
+      <option value="aprov">Aprovados</option>
+      <option value="nao">Marcados "não enviar"</option>
+      <option value="env">Já enviados</option>
+    </select>
+    <span class="esp"></span>
+    <span class="sujo" id="sujoC">● alterações não salvas</span>
+    <button class="btn" id="btnAdd">+ Adicionar contato</button>
+    <button class="btn" id="btnAprovVis">✓ Aprovar visíveis</button>
+    <button class="btn pri" id="btnSalvarC">Salvar alterações</button>
+  </div>
+  <div class="tabwrap"><table>
+    <thead><tr>
+      <th title="Entra no disparo?">Enviar</th><th title="Trava: só envia se aprovado">Aprovado</th>
+      <th>Empresa</th><th>E-mail</th><th>Tipo</th><th>Nome</th><th>Saudação (abertura)</th>
+      <th>Frase personalizada</th><th>Assunto próprio</th><th>Status</th><th></th>
+    </tr></thead>
+    <tbody id="tbC"></tbody>
+  </table></div>
+  <p class="dica" style="margin-top:8px;color:var(--txt-2);font-size:12px">
+    Dica: mude <b>Tipo</b> ou <b>Nome</b> e clique em ↻ para gerar a saudação automaticamente. Nada é enviado sem <b>Aprovado</b> ligado.
+  </p>
+</section>
+
+<!-- ═════════════ TEXTO ═════════════ -->
+<section class="aba" id="aba-texto">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="barra" style="margin:0 0 6px"><h2 style="margin:0">Texto do e-mail</h2><span class="esp"></span>
+          <span class="sujo" id="sujoT">● não salvo</span>
+          <button class="btn mini" id="btnRestaurar" title="Volta ao texto original do código">Restaurar padrão</button>
+          <button class="btn pri" id="btnSalvarT">Salvar texto</button></div>
+        <p class="dica">Clique num campo azul para inserir no cursor. <code>**negrito**</code> · linhas começando com <code>- </code> viram lista ✓.</p>
+        <div class="vars" id="vars"></div>
+        <div class="campo"><label>Assunto</label><input type="text" id="t_ASSUNTO_PADRAO"></div>
+        <div class="campo"><label>Corpo do e-mail</label><textarea id="t_TEXTO_EMAIL" style="min-height:380px"></textarea></div>
+        <fieldset><legend>📎 Faixa do catálogo — <code>{bloco_catalogo}</code></legend>
+          <div class="cols2">
+            <div class="campo"><label>Título</label><input type="text" id="t_CATALOGO_TITULO"></div>
+            <div class="campo"><label>Texto</label><input type="text" id="t_CATALOGO_TEXTO"></div>
+            <div class="campo"><label>Destaques <small>(separados por vírgula, opcional)</small></label><input type="text" id="t_CATALOGO_DESTAQUES"></div>
+            <div class="campo"><label>Link do PDF <small>(OneDrive, acesso para qualquer pessoa)</small></label><input type="text" id="t_CATALOGO_LINK" placeholder="https://..."></div>
+            <div class="campo"><label>Texto do botão</label><input type="text" id="t_CATALOGO_BOTAO"></div>
+          </div>
+          <p class="dica">Sem link, a faixa não fica clicável: um e-mail não consegue apontar para o próprio anexo. O PDF continua indo em anexo.</p>
+        </fieldset>
+        <fieldset><legend>💬 Botão WhatsApp — <code>{botao_whatsapp}</code></legend>
+          <div class="campo"><label>Texto do botão</label><input type="text" id="t_WHATSAPP_BOTAO"></div>
+          <div class="campo"><label>Mensagem que já vem digitada</label><textarea id="t_WHATSAPP_MENSAGEM" style="min-height:60px"></textarea></div>
+        </fieldset>
+      </div>
+    </div>
+    <div class="previa">
+      <div class="barra" style="margin-bottom:8px">
+        <b>Prévia como:</b>
+        <select id="prevContato" style="flex:1"></select>
+      </div>
+      <div class="assunto"><b>Assunto:</b><span id="prevAssunto"></span></div>
+      <iframe id="prevFrame" title="prévia"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ TELEFONES ═════════════ -->
+<section class="aba" id="aba-telefones">
+  <div class="barra">
+    <input type="search" id="buscaT" placeholder="Buscar empresa, nome, número..." style="max-width:320px">
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="soSemEmail"> só empresas sem e-mail</label>
+    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="soWa"> só com WhatsApp</label>
+    <span class="esp"></span><span id="contT" class="sub" style="color:var(--txt-2)"></span>
+  </div>
+  <div class="tabwrap"><table>
+    <thead><tr><th>Empresa</th><th>Nomes identificados</th><th>E-mails</th><th>Telefones</th><th>LinkedIn</th><th>Situação</th></tr></thead>
+    <tbody id="tbT"><tr><td colspan="6" class="vazio">Carregando...</td></tr></tbody>
+  </table></div>
+</section>
+
+<!-- ═════════════ CONFIG ═════════════ -->
+<section class="aba" id="aba-config">
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <div class="barra" style="margin:0 0 10px"><h2 style="margin:0">Assinatura e remetente</h2><span class="esp"></span>
+          <span class="sujo" id="sujoG">● não salvo</span><button class="btn pri" id="btnSalvarG">Salvar configurações</button></div>
+        <div class="cols2">
+          <div class="campo"><label>Nome</label><input type="text" data-cfg="NOME_REMETENTE"></div>
+          <div class="campo"><label>Cargo</label><input type="text" data-cfg="CARGO"></div>
+          <div class="campo"><label>Empresa</label><input type="text" data-cfg="NOME_EMPRESA"></div>
+          <div class="campo"><label>E-mail remetente (login)</label><input type="text" data-cfg="EMAIL_REMETENTE"></div>
+          <div class="campo"><label>E-mail na assinatura</label><input type="text" data-cfg="EMAIL_ASSINATURA"></div>
+          <div class="campo"><label>Telefone</label><input type="text" data-cfg="TELEFONE"></div>
+          <div class="campo"><label>WhatsApp (botão)</label><input type="text" data-cfg="WHATSAPP"></div>
+          <div class="campo"><label>Responder para</label><input type="text" data-cfg="RESPONDER_PARA"></div>
+        </div>
+        <div class="campo"><label>Endereço</label><input type="text" data-cfg="ENDERECO"></div>
+        <div class="campo"><label>Texto de descadastro</label><input type="text" data-cfg="TEXTO_DESCADASTRO"></div>
+        <div class="campo"><label>Aviso legal (rodapé)</label><textarea data-cfg="AVISO_LEGAL"></textarea></div>
+      </div>
+      <div class="card">
+        <h2>👥 Cópias do comercial</h2>
+        <p class="dica">Entram em todos os e-mails do disparo real. Separe os endereços por vírgula. O envio de teste não copia ninguém.</p>
+        <div class="campo"><label>Em cópia (Cc) <small>— o cliente vê</small></label><input type="text" data-cfg="EMAILS_COPIA" placeholder="nome@suaempresa.com.br, outro@suaempresa.com.br"></div>
+        <div class="campo"><label>Em cópia oculta (Cco) <small>— o cliente não vê</small></label><input type="text" data-cfg="EMAILS_COPIA_OCULTA" placeholder="nome@suaempresa.com.br"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>📎 Catálogo em anexo</h2>
+        <p class="dica">Escolha o PDF; ele é copiado para a pasta e anexado em todos os e-mails. Ideal até 5 MB.</p>
+        <div class="barra">
+          <input type="file" id="arqCat" accept=".pdf,.zip" style="flex:1">
+          <button class="btn pri" id="btnCat">Enviar PDF</button>
+        </div>
+        <div class="campo"><label>Arquivo em uso</label>
+          <div class="barra" style="margin:0"><input type="text" data-cfg="ANEXO_CATALOGO" placeholder="(vazio = sem anexo)"><a class="btn mini" href="/catalogo" target="_blank">abrir</a></div></div>
+      </div>
+      <div class="card">
+        <h2>Como enviar</h2>
+        <div class="campo"><label>Estilo do e-mail</label>
+          <select data-cfg="ESTILO_EMAIL">
+            <option value="DESIGN">DESIGN — faixas coloridas e botões</option>
+            <option value="SIMPLES">SIMPLES — parece escrito à mão</option>
+          </select>
+          <small>Se algum destinatário recusar o e-mail como spam, o estilo SIMPLES costuma passar melhor.</small>
+        </div>
+        <div class="campo"><label>Modo de envio</label>
+          <select data-cfg="MODO_ENVIO">
+            <option value="SMTP">SMTP — servidor de e-mail com senha</option>
+            <option value="OUTLOOK">OUTLOOK — pelo Outlook instalado neste PC (sem senha)</option>
+          </select>
+          <small>Microsoft 365 bloqueou o login por senha? Use <b>OUTLOOK</b> (precisa do Outlook clássico configurado e, uma vez, <code>pip install pywin32</code>).</small>
+        </div>
+        <h2 style="margin-top:10px">Servidor de e-mail (SMTP)</h2>
+        <p class="dica">Só usado no modo SMTP. Escolha o provedor do seu e-mail ou use o teste abaixo.</p>
+        <div class="campo"><select id="presetSmtp">
+          <option value="">— escolher provedor —</option>
+          <option value="smtp.office365.com|587">Outlook / Microsoft 365</option>
+          <option value="smtp.gmail.com|587">Gmail / Google Workspace</option>
+          <option value="smtp.hostinger.com|465">Hostinger</option>
+          <option value="email-ssl.com.br|465">Locaweb</option>
+          <option value="mail.seudominio.com.br|465">cPanel / HostGator (troque pelo seu domínio)</option>
+        </select></div>
+        <div class="cols2">
+          <div class="campo"><label>Servidor</label><input type="text" data-cfg="SMTP_HOST"></div>
+          <div class="campo"><label>Porta</label><input type="text" data-cfg="SMTP_PORTA"></div>
+        </div>
+        <div style="background:var(--azul-claro);border:1px solid var(--azul-borda);border-radius:8px;padding:12px 14px;margin:4px 0 14px">
+          <b style="color:var(--azul)">🔌 Não sabe o servidor ou deu erro?</b>
+          <div style="font-size:13px;color:var(--txt-2);margin:2px 0 8px">O teste descobre o provedor do seu e-mail e tenta as combinações de servidor/porta. Com a senha, testa também o login.</div>
+          <div class="barra" style="margin:0">
+            <input type="password" id="senhaDiag" placeholder="senha (opcional)" autocomplete="off" style="flex:1;max-width:260px">
+            <button class="btn pri" id="btnDiag">Testar conexão</button>
+          </div>
+          <pre class="log" id="diagLog" style="display:none;margin-top:10px;max-height:240px"></pre>
+          <div id="diagAcao" style="margin-top:8px"></div>
+        </div>
+        <h2 style="margin-top:6px">Segurança</h2>
+        <div class="cols2">
+          <div class="campo"><label>Intervalo mínimo (s)</label><input type="number" step="0.5" data-cfg="INTERVALO_MIN"></div>
+          <div class="campo"><label>Intervalo máximo (s)</label><input type="number" step="0.5" data-cfg="INTERVALO_MAX"></div>
+          <div class="campo"><label>Máx. por execução</label><input type="number" data-cfg="LIMITE_POR_EXECUCAO"></div>
+          <div class="campo"><label>Parar após N erros seguidos</label><input type="number" data-cfg="PARAR_APOS_ERROS_SEGUIDOS"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Planilha de empresas</h2>
+        <p class="dica">Atual: <b id="origemNome">—</b>. Para usar uma nova lista, envie o Excel e clique em “Refazer revisão” (apaga as aprovações atuais).</p>
+        <div class="barra">
+          <input type="file" id="arqPlan" accept=".xlsx" style="flex:1">
+          <button class="btn" id="btnPlan">Enviar Excel</button>
+          <button class="btn perigo" id="btnRefazer">Refazer revisão</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ ENVIO ═════════════ -->
+<section class="aba" id="aba-envio">
+  <div class="kpis" id="kpis"></div>
+  <div id="alertas"></div>
+  <div class="grid2">
+    <div>
+      <div class="card">
+        <h2>1. Envie um teste para você</h2>
+        <p class="dica">Recebe o e-mail exatamente como o cliente (com anexo e logo). Não conta como enviado e não copia a equipe.</p>
+        <div class="cols2">
+          <div class="campo"><label>Mandar para</label><input type="email" id="testePara"></div>
+          <div class="campo"><label>Personalizado como</label><select id="testeComo"></select></div>
+        </div>
+        <div class="campo" id="campoSenha"><label>Senha do e-mail <small>(não fica salva · no modo OUTLOOK não precisa)</small></label><input type="password" id="senha" autocomplete="off"></div>
+        <button class="btn" id="btnTeste">✉️ Enviar teste</button>
+      </div>
+      <div class="card">
+        <h2>2. Disparo real</h2>
+        <p class="dica">Usa a mesma senha acima. Intervalo aleatório entre e-mails; quem já recebeu nunca recebe de novo.</p>
+        <div class="campo"><label id="lblConf">Para confirmar, digite: ENVIAR N</label><input type="text" id="confirma" autocomplete="off"></div>
+        <div class="barra"><button class="btn verde" id="btnEnviar">🚀 Enviar agora</button>
+          <button class="btn perigo" id="btnParar" style="display:none">⏹ Parar</button></div>
+        <div class="prog"><div id="progBar"></div></div>
+        <div id="progTxt" style="font-size:13px;color:var(--txt-2);margin-bottom:8px"></div>
+        <pre class="log" id="log">—</pre>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h2>Fila desta execução</h2>
+        <p class="dica">Aprovados que ainda não receberam.</p>
+        <div class="fila" id="fila"></div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<div class="modal" id="modal"><div class="box">
+  <div class="cab"><b id="mTit">Prévia</b><span class="esp" style="flex:1"></span><button class="btn mini" id="mFechar">Fechar ✕</button></div>
+  <div class="assunto" style="margin:8px 16px"><b>Assunto:</b><span id="mAss"></span></div>
+  <iframe id="mFrame"></iframe>
+</div></div>
+<div id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+let EST = null, CONT = [], TEL = null, modC = new Set(), novoId = -1;
+const TXT_KEYS = ["ASSUNTO_PADRAO","TEXTO_EMAIL","CATALOGO_TITULO","CATALOGO_TEXTO","CATALOGO_DESTAQUES","CATALOGO_LINK","CATALOGO_BOTAO","WHATSAPP_BOTAO","WHATSAPP_MENSAGEM"];
+const VARS = ["{saudacao}","{nome}","{primeiro_nome}","{empresa}","{empresa_curta}","{a_empresa}","{da_empresa}","{frase_personalizada}","{voces}","{podem}","{voces_trabalham}","{bloco_catalogo}","{botao_whatsapp}","{remetente}"];
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const sim = v => ["SIM","S","X","OK","YES","1"].includes(String(v||"").trim().toUpperCase());
+
+function toast(msg, tipo=""){ const t=$("#toast"); t.textContent=msg; t.className=tipo; t.style.display="block";
+  clearTimeout(t._h); t._h=setTimeout(()=>t.style.display="none", tipo==="er"?7000:3500); }
+async function api(url, corpo){
+  const op = corpo===undefined ? {} : {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(corpo)};
+  const r = await fetch(url, op); let j={}; try{ j=await r.json(); }catch(e){}
+  if(!r.ok) throw new Error(j.erro || ("Erro "+r.status)); return j;
+}
+
+/* ---------- navegação ---------- */
+$$("#nav button").forEach(b => b.onclick = () => {
+  $$("#nav button").forEach(x=>x.classList.toggle("ativo", x===b));
+  $$(".aba").forEach(a=>a.classList.toggle("ativa", a.id==="aba-"+b.dataset.aba));
+  if(b.dataset.aba==="telefones" && !TEL) carregarTel();
+  if(b.dataset.aba==="envio") atualizarResumo();
+  if(b.dataset.aba==="texto") previaTexto();
+});
+
+/* ---------- carga ---------- */
+async function carregar(){
+  EST = await api("/api/estado");
+  CONT = EST.contatos; modC.clear(); $("#sujoC").classList.remove("on");
+  renderContatos(); preencherTextos(); preencherConfig(); renderChips(EST.resumo); preencherSelects();
+  $("#origemNome").textContent = EST.origem || "(nenhuma)";
+}
+function renderChips(r){
+  $("#chips").innerHTML =
+    `<span class="chip">${r.total} contatos</span>`+
+    `<span class="chip ${r.aprovados===r.marcados&&r.marcados?'ok':'alerta'}">${r.aprovados}/${r.marcados} aprovados</span>`+
+    `<span class="chip ok">${r.ja_enviados} já enviados</span>`+
+    (r.anexo?`<span class="chip">📎 ${esc(r.anexo)}</span>`:`<span class="chip alerta">sem catálogo</span>`);
+}
+function preencherSelects(){
+  const ops = CONT.map(c=>`<option value="${esc(c.EMAIL)}">${esc(c.EMPRESA)} — ${esc(c.EMAIL)}</option>`).join("");
+  const p=$("#prevContato"), v=p.value; p.innerHTML = ops || `<option value="">(exemplo)</option>`; if(v) p.value=v;
+  const t=$("#testeComo"), v2=t.value; t.innerHTML = ops; if(v2) t.value=v2;
+}
+
+/* ---------- contatos ---------- */
+function filtrados(){
+  const q=$("#busca").value.toLowerCase().trim(), f=$("#filtro").value;
+  return CONT.filter(c=>{
+    if(q && ![c.EMPRESA,c.EMAIL,c.NOME,c.SAUDACAO].join(" ").toLowerCase().includes(q)) return false;
+    if(f==="pend") return sim(c.ENVIAR) && !sim(c.APROVADO);
+    if(f==="aprov") return sim(c.APROVADO) && sim(c.ENVIAR);
+    if(f==="nao") return !sim(c.ENVIAR);
+    if(f==="env") return c.JA_ENVIADO;
+    return true;
+  });
+}
+function renderContatos(){
+  const tb=$("#tbC"), ls=filtrados();
+  if(!EST.revisao_existe){ tb.innerHTML=`<tr><td colspan="11" class="vazio">Ainda não existe planilha de revisão. Vá em <b>Configurações → Refazer revisão</b>.</td></tr>`; return; }
+  if(!ls.length){ tb.innerHTML=`<tr><td colspan="11" class="vazio">Nenhum contato neste filtro.</td></tr>`; return; }
+  tb.innerHTML = ls.map(c=>{
+    const id=c._row, st = c.JA_ENVIADO ? `<span class="tag ok">enviado</span>` :
+      (String(c.STATUS).startsWith("ERRO") ? `<span class="tag er" title="${esc(c.STATUS)}">erro</span>` :
+      (sim(c.ENVIAR)&&!sim(c.APROVADO) ? `<span class="tag pend">falta aprovar</span>` : ""));
+    const cls=[modC.has(id)?"mod":"", c.JA_ENVIADO?"enviado":"", sim(c.ENVIAR)?"":"off"].join(" ");
+    return `<tr data-id="${id}" class="${cls}">
+      <td><label class="sw"><input type="checkbox" data-f="ENVIAR" ${sim(c.ENVIAR)?"checked":""}><span></span></label></td>
+      <td><label class="sw az"><input type="checkbox" data-f="APROVADO" ${sim(c.APROVADO)?"checked":""}><span></span></label></td>
+      <td class="c-emp"><input type="text" data-f="EMPRESA" value="${esc(c.EMPRESA)}"></td>
+      <td class="c-mail"><input type="text" data-f="EMAIL" value="${esc(c.EMAIL)}"></td>
+      <td class="c-tipo"><select data-f="TIPO"><option ${c.TIPO==="GRUPO"?"selected":""}>GRUPO</option><option ${c.TIPO==="PESSOAL"?"selected":""}>PESSOAL</option></select></td>
+      <td class="c-nome"><input type="text" data-f="NOME" value="${esc(c.NOME)}"></td>
+      <td class="c-saud"><div style="display:flex;gap:4px"><input type="text" data-f="SAUDACAO" value="${esc(c.SAUDACAO)}"><button class="btn mini" data-acao="sug" title="Gerar saudação a partir de Tipo/Nome">↻</button></div></td>
+      <td class="c-frase"><textarea data-f="FRASE_PERSONALIZADA" placeholder="opcional">${esc(c.FRASE_PERSONALIZADA)}</textarea></td>
+      <td class="c-ass"><input type="text" data-f="ASSUNTO" value="${esc(c.ASSUNTO)}" placeholder="(padrão)"></td>
+      <td class="status">${st}</td>
+      <td><button class="btn mini" data-acao="ver" title="Ver como fica">👁</button></td>
+    </tr>`;}).join("");
+}
+function marcar(id){ modC.add(id); $("#sujoC").classList.add("on"); const tr=$(`#tbC tr[data-id="${id}"]`); if(tr) tr.classList.add("mod"); }
+$("#tbC").addEventListener("input", e=>{
+  const tr=e.target.closest("tr"); if(!tr||!e.target.dataset.f) return;
+  const c=CONT.find(x=>String(x._row)===tr.dataset.id); const f=e.target.dataset.f;
+  c[f] = e.target.type==="checkbox" ? (e.target.checked?"SIM":(f==="ENVIAR"?"NAO":"")) : e.target.value;
+  if(f==="ENVIAR") tr.classList.toggle("off", !e.target.checked);
+  marcar(c._row);
+});
+function curta(emp){ let n=emp.replace(/\b(S\/?A|S\.A\.?|LTDA\.?|EIRELI|ME)\b\.?/gi,"").replace(/\s*[-–(].*$/,"").replace(/\s+/g," ").replace(/^[ ,.-]+|[ ,.-]+$/g,"")||emp;
+  if(n===n.toUpperCase()||n===n.toLowerCase()) n=n.replace(/\S+/g,w=>w[0].toUpperCase()+w.slice(1).toLowerCase()); return n; }
+function dado(emp){ return /^(grupo|estaleiro|instituto|laboratório|moinho|frigorífico) /i.test(emp)?"do":"da"; }
+function sugerir(c){
+  if(c.TIPO==="PESSOAL") return `Olá, ${(c.NOME||"").trim()},`;
+  const e=curta(c.EMPRESA||""), n=(c.NOME||"").trim();
+  const eq = !n ? "equipe" : (/^equipe/i.test(n) ? n[0].toLowerCase()+n.slice(1) : "equipe de "+n);
+  return `Olá, ${eq} ${dado(e)} ${e},`;
+}
+$("#tbC").addEventListener("click", async e=>{
+  const b=e.target.closest("button[data-acao]"); if(!b) return;
+  const tr=b.closest("tr"), c=CONT.find(x=>String(x._row)===tr.dataset.id);
+  if(b.dataset.acao==="sug"){ c.SAUDACAO=sugerir(c); tr.querySelector('[data-f="SAUDACAO"]').value=c.SAUDACAO; marcar(c._row); }
+  if(b.dataset.acao==="ver") abrirModal(c);
+});
+$("#busca").oninput = renderContatos; $("#filtro").onchange = renderContatos;
+$("#btnAdd").onclick = ()=>{
+  const c={_row:novoId--, ENVIAR:"SIM", APROVADO:"", EMPRESA:"", EMAIL:"", TIPO:"PESSOAL", NOME:"", SAUDACAO:"", FRASE_PERSONALIZADA:"", ASSUNTO:"", TELEFONE:"", STATUS:"", JA_ENVIADO:false};
+  CONT.unshift(c); $("#busca").value=""; $("#filtro").value="todos"; marcar(c._row); renderContatos();
+  $(`#tbC tr[data-id="${c._row}"] [data-f="EMPRESA"]`).focus();
+};
+$("#btnAprovVis").onclick = ()=>{
+  const ls=filtrados().filter(c=>sim(c.ENVIAR)&&!sim(c.APROVADO));
+  if(!ls.length) return toast("Nenhum contato visível para aprovar.");
+  if(!confirm(`Aprovar ${ls.length} contato(s) visíveis?\n\nConfira antes se a saudação de cada um está certa.`)) return;
+  ls.forEach(c=>{ c.APROVADO="SIM"; modC.add(c._row); }); $("#sujoC").classList.add("on"); renderContatos();
+};
+$("#btnSalvarC").onclick = async ()=>{
+  if(!modC.size) return toast("Nada para salvar.");
+  const linhas = CONT.filter(c=>modC.has(c._row)).map(c=>{ const o={...c}; if(o._row<0) delete o._row; return o; });
+  const ruim = linhas.find(c=>!/^[^@\s]+@[^@\s]+\.[a-z]{2,}$/i.test(c.EMAIL||""));
+  if(ruim) return toast(`E-mail inválido: "${ruim.EMAIL||"(vazio)"}" — ${ruim.EMPRESA||""}`,"er");
+  try{ await api("/api/contatos",{linhas}); toast("Contatos salvos ✔","ok"); await carregar(); }
+  catch(e){ toast(e.message,"er"); }
+};
+
+/* ---------- modal prévia ---------- */
+async function abrirModal(c){
+  try{
+    const r = await api("/api/previa", c._row<0||modC.has(c._row) ? {linha:c} : {email:c.EMAIL});
+    $("#mTit").textContent = `Prévia — ${c.EMPRESA} <${r.para}>`; $("#mAss").textContent=r.assunto;
+    $("#mFrame").srcdoc = r.html; $("#modal").classList.add("on");
+  }catch(e){ toast(e.message,"er"); }
+}
+$("#mFechar").onclick = ()=>$("#modal").classList.remove("on");
+$("#modal").onclick = e=>{ if(e.target.id==="modal") $("#modal").classList.remove("on"); };
+
+/* ---------- textos ---------- */
+function preencherTextos(){
+  TXT_KEYS.forEach(k=>{ const el=$("#t_"+k); let v=EST.textos[k]; if(Array.isArray(v)) v=v.join(", "); el.value=v??""; });
+  $("#sujoT").classList.remove("on");
+}
+function lerTextos(){ const o={}; TXT_KEYS.forEach(k=>o[k]=$("#t_"+k).value); return o; }
+let ultimoFoco=null;
+$("#vars").innerHTML = VARS.map(v=>`<button type="button">${v}</button>`).join("");
+TXT_KEYS.forEach(k=>{ const el=$("#t_"+k);
+  el.addEventListener("focus",()=>ultimoFoco=el);
+  el.addEventListener("input",()=>{ $("#sujoT").classList.add("on"); agendarPrevia(); }); });
+$("#vars").onclick = e=>{
+  if(e.target.tagName!=="BUTTON") return; const el=ultimoFoco||$("#t_TEXTO_EMAIL"), v=e.target.textContent;
+  const a=el.selectionStart??el.value.length, b=el.selectionEnd??a;
+  el.value=el.value.slice(0,a)+v+el.value.slice(b); el.focus(); el.selectionStart=el.selectionEnd=a+v.length;
+  el.dispatchEvent(new Event("input"));
+};
+let tPrev; function agendarPrevia(){ clearTimeout(tPrev); tPrev=setTimeout(previaTexto,400); }
+async function previaTexto(){
+  try{
+    const r=await api("/api/previa",{email:$("#prevContato").value, textos:lerTextos()});
+    $("#prevAssunto").textContent=r.assunto;
+    const f=$("#prevFrame"), y=f.contentWindow? f.contentWindow.scrollY:0;
+    f.srcdoc=r.html; f.onload=()=>{ try{ f.contentWindow.scrollTo(0,y);}catch(e){} };
+  }catch(e){ $("#prevAssunto").textContent="⚠ "+e.message; }
+}
+$("#prevContato").onchange = previaTexto;
+$("#btnSalvarT").onclick = async ()=>{
+  try{ await api("/api/textos", lerTextos()); $("#sujoT").classList.remove("on"); toast("Texto salvo ✔","ok"); atualizarResumo(); }
+  catch(e){ toast(e.message,"er"); }
+};
+$("#btnRestaurar").onclick = async ()=>{
+  if(!confirm("Voltar ao texto original que está no código (disparo.py)?\nO texto salvo pelo painel será descartado.")) return;
+  const r=await api("/api/textos/restaurar",{}); EST.textos=r.textos; preencherTextos(); previaTexto(); toast("Texto restaurado.");
+};
+
+/* ---------- config ---------- */
+function preencherConfig(){ $$("[data-cfg]").forEach(el=>el.value=EST.config[el.dataset.cfg]??""); $("#sujoG").classList.remove("on");
+  if(!$("#testePara").value) $("#testePara").value = EST.config.EMAIL_REMETENTE||""; }
+$$("[data-cfg]").forEach(el=>["input","change"].forEach(ev=>el.addEventListener(ev,()=>$("#sujoG").classList.add("on"))));
+$("#presetSmtp").onchange = e=>{ if(!e.target.value) return; const [h,p]=e.target.value.split("|");
+  $('[data-cfg="SMTP_HOST"]').value=h; $('[data-cfg="SMTP_PORTA"]').value=p; $("#sujoG").classList.add("on"); };
+$("#btnSalvarG").onclick = async ()=>{
+  const o={}; $$("[data-cfg]").forEach(el=>o[el.dataset.cfg]=el.value);
+  try{ await api("/api/config",o); toast("Configurações salvas ✔","ok"); await carregar(); }catch(e){ toast(e.message,"er"); }
+};
+async function upload(url, inp){
+  const f=$(inp).files[0]; if(!f) { toast("Escolha um arquivo primeiro.","er"); return null; }
+  const r=await fetch(url,{method:"POST",headers:{"X-Nome":encodeURIComponent(f.name).replace(/%20/g," ").replace(/%[0-9A-F]{2}/g,"_")},body:f});
+  const j=await r.json(); if(!r.ok) throw new Error(j.erro); return j;
+}
+$("#btnCat").onclick = async ()=>{ try{ const j=await upload("/api/upload_catalogo","#arqCat"); if(j){ toast(`Catálogo "${j.nome}" salvo ✔`,"ok"); await carregar(); } }catch(e){ toast(e.message,"er"); } };
+$("#btnPlan").onclick = async ()=>{ try{ const j=await upload("/api/upload_planilha","#arqPlan"); if(j){ toast("Excel salvo como Empresas_Prospectadas.xlsx. Agora clique em Refazer revisão.","ok"); TEL=null; await carregar(); } }catch(e){ toast(e.message,"er"); } };
+$("#btnRefazer").onclick = async ()=>{
+  if(!confirm("Refazer a planilha de revisão a partir do Excel de empresas?\n\nTodas as aprovações e saudações editadas serão APAGADAS.\n(O histórico de quem já recebeu e-mail é mantido.)")) return;
+  try{ await api("/api/preparar",{}); TEL=null; toast("Revisão refeita ✔","ok"); await carregar(); }catch(e){ toast(e.message,"er"); }
+};
+
+$("#btnDiag").onclick = async ()=>{
+  const b=$("#btnDiag"), lg=$("#diagLog"); b.disabled=true; b.textContent="Testando... (até 1 min)";
+  lg.style.display="block"; lg.textContent="Testando..."; $("#diagAcao").innerHTML="";
+  try{
+    const r=await api("/api/diagnostico",{senha:$("#senhaDiag").value, config:Object.fromEntries(["EMAIL_REMETENTE","MODO_ENVIO","SMTP_HOST","SMTP_PORTA"].map(k=>[k,$(`[data-cfg="${k}"]`).value]))});
+    lg.textContent=r.passos.join("\n");
+    if(r.host){
+      const atual = $('[data-cfg="SMTP_HOST"]').value===r.host && String($('[data-cfg="SMTP_PORTA"]').value)===String(r.porta);
+      $("#diagAcao").innerHTML = (r.ok? `<div class="alerta-box ok" style="margin:0 0 8px">✔ Funcionou: <b>${esc(r.host)}:${r.porta}</b>${r.provedor?" ("+esc(r.provedor)+")":""}</div>`
+        : `<div class="alerta-box av" style="margin:0 0 8px">Servidor encontrado: <b>${esc(r.host)}:${r.porta}</b>${r.parcial&&$("#senhaDiag").value?" — mas o login foi recusado (veja a mensagem acima).":" — informe a senha para testar o login."}</div>`)
+        + (atual? "" : `<button class="btn verde" id="btnUsarDiag">Usar ${esc(r.host)}:${r.porta} e salvar</button>`);
+      const u=$("#btnUsarDiag"); if(u) u.onclick=async()=>{ $('[data-cfg="SMTP_HOST"]').value=r.host; $('[data-cfg="SMTP_PORTA"]').value=r.porta; $("#btnSalvarG").click(); };
+    }
+  }catch(e){ lg.textContent="Erro: "+e.message; }
+  finally{ b.disabled=false; b.textContent="Testar conexão"; }
+};
+
+/* ---------- telefones ---------- */
+async function carregarTel(){ try{ TEL=await api("/api/telefones"); renderTel(); }catch(e){ $("#tbT").innerHTML=`<tr><td colspan=6 class="vazio">${esc(e.message)}</td></tr>`; } }
+function renderTel(){
+  const q=$("#buscaT").value.toLowerCase().trim(), se=$("#soSemEmail").checked, sw=$("#soWa").checked;
+  const ls=TEL.filter(r=>{
+    if(se && r.emails.length) return false;
+    if(sw && !r.telefones.some(t=>t.wa)) return false;
+    return !q || JSON.stringify(r).toLowerCase().includes(q);
+  });
+  $("#contT").textContent = `${ls.length} de ${TEL.length} empresas`;
+  $("#tbT").innerHTML = ls.map(r=>`<tr style="${r.emails.length?"":"background:#FFF6F6"}">
+    <td><b>${esc(r.empresa)}</b></td>
+    <td>${r.nomes.map(esc).join("<br>")||'<span style="color:#aaa">—</span>'}</td>
+    <td>${r.emails.map(m=>`<a href="mailto:${esc(m)}">${esc(m)}</a>`).join("<br>")||'<span class="tag er">sem e-mail</span>'}</td>
+    <td>${r.telefones.map(t=>`<div style="margin-bottom:4px;white-space:nowrap">${esc(t.numero)} <small style="color:var(--txt-2)">${esc(t.tipo)}</small>
+        ${t.wa?` <a class="wa" href="${esc(t.wa)}" target="_blank">WhatsApp</a>`:""}</div>`).join("")||'<span style="color:#aaa">—</span>'}</td>
+    <td>${r.linkedin.map(u=>`<a href="${esc(u)}" target="_blank">perfil</a>`).join(" · ")}</td>
+    <td style="font-size:12px;color:var(--txt-2)">${esc(r.situacao)}</td></tr>`).join("") || `<tr><td colspan=6 class="vazio">Nada encontrado.</td></tr>`;
+}
+$("#buscaT").oninput=renderTel; $("#soSemEmail").onchange=renderTel; $("#soWa").onchange=renderTel;
+
+/* ---------- envio ---------- */
+async function atualizarResumo(){
+  try{
+    const r=await api("/api/resumo"); renderChips(r);
+    const n=Math.min(r.pendentes,r.limite);
+    $("#kpis").innerHTML=[["Contatos",r.total],["Aprovados",`${r.aprovados}/${r.marcados}`],["Já enviados",r.ja_enviados],["Nesta execução",n,`limite ${r.limite}`],["Anexo",r.anexo?`${r.anexo_mb} MB`:"—",r.anexo||"sem catálogo"]]
+      .map(([t,v,s])=>`<div class="kpi"><div class="r">${t}</div><div class="n">${esc(v)}</div>${s?`<div class="r">${esc(s)}</div>`:""}</div>`).join("");
+    let h="";
+    if(r.bloqueios.length) h+=`<div class="alerta-box er"><b>🔒 Envio bloqueado — resolva antes:</b><ul>${r.bloqueios.slice(0,30).map(b=>`<li>${esc(b)}</li>`).join("")}</ul></div>`;
+    else if(n) h+=`<div class="alerta-box ok">✔ Tudo pronto para enviar ${n} e-mail(s).</div>`;
+    if(r.aviso) h+=`<div class="alerta-box av">⚠ ${esc(r.aviso)}</div>`;
+    if(r.copias.cc.length||r.copias.cco.length) h+=`<div class="alerta-box ok">👥 Em todos os envios — ${r.copias.cc.length?`Cc: ${esc(r.copias.cc.join(", "))}`:""}${r.copias.cc.length&&r.copias.cco.length?" · ":""}${r.copias.cco.length?`Cco: ${esc(r.copias.cco.join(", "))}`:""}</div>`;
+    $("#alertas").innerHTML=h;
+    $("#fila").innerHTML = r.fila.slice(0,r.limite).map(f=>`<div>${esc(f.email)} <span>· ${esc(f.empresa)} · “${esc(f.saudacao)}”</span></div>`).join("") || `<div class="vazio">Fila vazia.</div>`;
+    $("#lblConf").textContent=`Para confirmar, digite: ENVIAR ${n}`; $("#confirma").placeholder=`ENVIAR ${n}`;
+    $("#btnEnviar").disabled = !!r.bloqueios.length || !n;
+  }catch(e){ toast(e.message,"er"); }
+}
+$("#btnTeste").onclick = async ()=>{
+  const b=$("#btnTeste"); b.disabled=true; b.textContent="Enviando...";
+  try{ const r=await api("/api/teste",{senha:$("#senha").value, para:$("#testePara").value, email:$("#testeComo").value}); toast(r.msg,"ok"); }
+  catch(e){ toast(e.message,"er"); } finally{ b.disabled=false; b.textContent="✉️ Enviar teste"; }
+};
+$("#btnEnviar").onclick = async ()=>{
+  try{ await api("/api/enviar",{senha:$("#senha").value, confirmacao:$("#confirma").value}); $("#confirma").value=""; acompanhar(); }
+  catch(e){ toast(e.message,"er"); }
+};
+$("#btnParar").onclick = ()=>api("/api/parar",{});
+async function acompanhar(){
+  const p=await api("/api/progresso");
+  $("#log").textContent = p.log.join("\n")||"—"; $("#log").scrollTop=1e9;
+  $("#progBar").style.width = p.total? (100*p.feitos/p.total)+"%" : "0";
+  $("#progTxt").textContent = p.total? `${p.feitos}/${p.total} · ${p.ok} ok · ${p.erros} erro(s)` : "";
+  $("#btnParar").style.display = p.rodando?"":"none"; $("#btnEnviar").style.display = p.rodando?"none":"";
+  if(p.rodando) setTimeout(acompanhar,1000); else { atualizarResumo(); if(p.total) carregar(); }
+}
+
+window.addEventListener("beforeunload", e=>{ if(modC.size||$("#sujoT").classList.contains("on")||$("#sujoG").classList.contains("on")){ e.preventDefault(); e.returnValue=""; } });
+carregar().then(()=>{ atualizarResumo(); acompanhar(); }).catch(e=>toast("Não consegui carregar: "+e.message,"er"));
+</script>
+</body>
+</html>

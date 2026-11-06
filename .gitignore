@@ -1,0 +1,28 @@
+# Dados de contatos e histórico de envios
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+~$*
+previa/
+
+# Dados da empresa e do remetente
+config.txt
+textos.json
+LEIA-ME.txt
+
+# Catálogos, logo e imagens
+*.pdf
+*.zip
+*.png
+*.jpg
+*.jpeg
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editor
+.vscode/
